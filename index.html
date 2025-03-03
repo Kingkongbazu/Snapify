@@ -107,6 +107,7 @@
 
     <h3>Live OCR:</h3>
     <button onclick="startLiveOCR()">📷 Live Scan</button>
+    <button onclick="toggleCamera()">🔄 Toggle Camera</button>
     <video id="cameraView" autoplay playsinline class="hidden-video"></video>
     <button onclick="captureImage()">Snap Picture</button>
     <textarea id="liveText" readonly title="Live OCR Text" placeholder="Live OCR text will appear here"></textarea>
@@ -114,6 +115,9 @@
     <script>
         document.getElementById("drop-area").addEventListener("click", () => document.getElementById("fileInput").click());
         document.getElementById("fileInput").addEventListener("change", uploadFile);
+
+        let currentStream;
+        let useFrontCamera = true;
 
         function uploadFile() {
             let file = document.getElementById("fileInput").files[0];
@@ -167,13 +171,28 @@
             const video = document.getElementById('cameraView');
             video.classList.add('show');
 
-            navigator.mediaDevices.getUserMedia({ video: true })
+            const constraints = {
+                video: {
+                    facingMode: useFrontCamera ? 'user' : 'environment'
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
+                    currentStream = stream;
                     video.srcObject = stream;
                 })
                 .catch(err => {
                     console.error("Error accessing camera: ", err);
                 });
+        }
+
+        function toggleCamera() {
+            useFrontCamera = !useFrontCamera;
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            startLiveOCR();
         }
 
         function captureImage() {

@@ -53,7 +53,7 @@ def upload_file():
         return jsonify({"error": str(e)}), 500
     finally:
         os.remove(file_path)
-        if os.path.exists(preprocessed_path):
+        if os.exists(preprocessed_path):
             os.remove(preprocessed_path)
 
 @app.route('/detect_language', methods=['POST'])
